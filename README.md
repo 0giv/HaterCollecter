@@ -36,3 +36,10 @@ To see the commands: !helpme</li>
 
 <h2>Contact</h2>
 <li>Discord : 0giv
+
+<h2>Example Photos</h2>
+<img src="photos/photo_5776046485983575574_y.jpg" width="300" height="200"><br>
+<img src="photos/photo_5776046485983575575_y.jpg" width="300" height="200"><br>
+<img src="photos/photo_5776046485983575576_y.jpg" width="300" height="200"><br>
+<img src="photos/photo_5776046485983575577_y.jpg" width="300" height="200"><br>
+<img src="photos/photo_5776046485983575578_y.jpg" width="300" height="200"><br>
