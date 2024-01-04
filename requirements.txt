@@ -1,0 +1,7 @@
+colorama
+discord.py
+opencv-python
+sounddevice
+wave
+Pillow
+numpy
