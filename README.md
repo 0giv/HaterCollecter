@@ -1,5 +1,5 @@
 <h2>Set Up Bot and Webhook Tokens</h2>
-<li>Add the relevant tokens to the HaterCollecter.py file under the bot_token and webhook_token fields.
+<li>Add the relevant tokens to the HaterCollecter.py file under the bot_token fields.
 <h2>Usage</h2>
 <li>
 To see the commands: !helpme</li>
