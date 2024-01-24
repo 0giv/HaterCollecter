@@ -31,7 +31,6 @@ client = discord.Client(intents=intents)
 
 
 token = "DISCORD BOT TOKEN HERE"
-webhook = "WEBHOOK HERE"
 
 temp = os.getenv("temp")
 temp_path = os.path.join(temp, ''.join(random.choices(
