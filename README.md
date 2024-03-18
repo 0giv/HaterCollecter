@@ -60,11 +60,6 @@ pyinstaller filename --one-file --window
 !cmd: Displays the best CMD commands (also available on the internet).
 ```
 
-## **Important Notes**
-<li>Before starting, install the requirements.txt file.<br>
-<li>Set up bot and webhook tokens in the HaterCollecter.py file.
-
-
 ## **Contact**
 <li>Discord : 0giv
 
