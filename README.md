@@ -25,7 +25,6 @@ If you want an exe file you need to install  ```pyinstaller```
 pyinstaller filename --one-file --window
  ```
 
-## **Set Up Bot Token**
 
 ## **Usage**
 <li>
