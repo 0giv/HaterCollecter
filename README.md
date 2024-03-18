@@ -13,9 +13,13 @@ pip3 install -r requirements.txt
 Then if the steps above were successful, you can launch the python file by executing ```python HaterCollecter.py```. It will create a new channel and post a message on the server with a generated session number.\
 Now your bot should be available to use ! 
 
-## **Disclaimer:**
+If you want an exe file you need to install  ```pyinstaller```
 
-This tool is for educational use only, the author will not be held responsible for any misuse of this tool.
+## **PyInstaller Guide:**
+ After downloading PyInstaller
+ ```
+pyinstaller filename --one-file --window
+ ```
 
 ## **Set Up Bot Token**
 
@@ -69,3 +73,8 @@ Python3, Windows(x64)
 <img src="photos/photo_5776046485983575575_y.jpg" width="300" height="200"><br>
 <img src="photos/photo_5776046485983575576_y.jpg" width="300" height="200"><br>
 <img src="photos/photo_5776046485983575577_y.jpg" width="300" height="200"><br>
+
+
+## **Disclaimer:**
+
+This tool is for educational use only, the author will not be held responsible for any misuse of this tool.
