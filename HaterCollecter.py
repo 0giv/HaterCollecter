@@ -554,7 +554,7 @@ async def session(ctx, *args):
                     f.seek(0)
                     channel = f.read()
                 new_channel = await guild.create_text_channel(channel)
-                ctx.send("```Session Created. Need a restart to use.```")
+                await ctx.send("```Session Created. Need a restart to use.```")
             else:
                 os.mkdir(new_temp_path)
                 with open(f"{new_temp_path}\\session.txt", "w+") as f:
@@ -562,7 +562,7 @@ async def session(ctx, *args):
                     f.seek(0)
                     channel = f.read()
                 new_channel = await guild.create_text_channel(channel)
-                ctx.send("```Session Created. Need a restart to use.```")
+                await ctx.send("```Session Created. Need a restart to use.```")
 
         except Exception as e:
             await ctx.channel.send(f"```Error:\n{e}```")
