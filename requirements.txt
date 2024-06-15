@@ -1,7 +1,9 @@
-colorama
 discord.py
+requests
 opencv-python
-sounddevice
-wave
-Pillow
 numpy
+Pillow
+sounddevice
+gtts
+pycryptodome
+pywin32
