@@ -64,7 +64,7 @@ pyinstaller filename --one-file --window
 ```
 Make a builder for Rat.
 Make a Gui for builder.
-Make it more durable/permanent.
+Make it more persistant.
 ```
 ## **Contact**
 <li>Discord : 0giv
