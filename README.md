@@ -3,18 +3,16 @@
 **Requirements:**\
 Python3, Windows(x64)
 
-
-## **Setup Guide:**
-You will first need to register a bot with the Discord developer portal and then add the bot to the Discord server that you want to use to control the bot (make sure the bot has administrator privileges in the Discord server).
-Once the bot is created copy the token of your bot and paste it at line 33.
-<li>Add the relevant tokens to the HaterCollecter.py file under the "token =" fields.
-
-
 Install requirements :
 ```
 pip3 install -r requirements.txt
 ```
-All you have to do is double clicking builder.pyw after giving a token you are ready to build the exe by clicking 'Build EXE' button.
+
+## **Setup Guide:**
+You will first need to register a bot with the Discord developer portal and then add the bot to the Discord server that you want to use to control the bot (make sure the bot has administrator privileges in the Discord server).
+Once the bot is created copy the token of your bot then:
+
+- All you have to do is double clicking builder.pyw after giving a token you are ready to build the exe by clicking 'Build EXE' button.
 
 
 ## **Usage**
