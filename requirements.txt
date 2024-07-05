@@ -7,3 +7,4 @@ sounddevice
 gtts
 pycryptodome
 pywin32
+pyinstaller
