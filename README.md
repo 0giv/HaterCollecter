@@ -14,16 +14,7 @@ Install requirements :
 ```
 pip3 install -r requirements.txt
 ```
-Then if the steps above were successful, you can launch the python file by executing ```python HaterCollecter.py```. It will create a new channel and post a message on the server with a generated session number.\
-Now your bot should be available to use ! 
-
-If you want an exe file you need to install  ```pyinstaller```
-
-## **PyInstaller Guide:**
- After downloading PyInstaller
- ```
-pyinstaller filename --one-file --window
- ```
+All you have to do is double clicking builder.pyw after giving a token you are ready to build the exe by clicking 'Build EXE' button.
 
 
 ## **Usage**
@@ -34,7 +25,6 @@ pyinstaller filename --one-file --window
 ```
 !helpme: Displays commands.
 !ss (number): Takes a screenshot. Specify the number of screenshots to be taken as a parameter.
-!getinfo: Retrieves information about the target system.<br><li>
 !recordvoice (second): Records voice for a specified duration.<br><li>
 !ws (number): Takes photos from the webcam. Specify the number of photos to be taken as a parameter.
 !wstream: Captures real-time photos.
@@ -62,9 +52,9 @@ pyinstaller filename --one-file --window
 ```
 ## **To Do:**
 ```
-Make a builder for Rat.
-Make a Gui for builder.
-Make it more persistant.
+Make a builder for Rat. +
+Make a Gui for builder. +
+Make it more persistant. +
 ```
 ## **Contact**
 <li>Discord : 0giv
