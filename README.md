@@ -38,6 +38,7 @@ Once the bot is created copy the token of your bot then:
 !get (file or file path): Gets the file from the target.
 !voice (file): Uploads a voice file into the target and runs it.
 !shutdown: Shuts down the PC.
+!screen_record (second) : Record Screen.    
 !restart: Restarts the PC.
 !msg (custom input): Sends a MessageBox.
 !wallpaper (picture): Changes the wallpaper (only supports png format).
