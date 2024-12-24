@@ -8,3 +8,5 @@ gtts
 pycryptodome
 pywin32
 pyinstaller
+pyautogui
+cryptography
